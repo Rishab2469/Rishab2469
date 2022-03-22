@@ -1,1 +1,71 @@
 test file 2
+/* 2. Using the “Payments” table, find out the total amount spent by each customer and their respective countries */
+
+select p.customernumber, sum(amount), country
+from payments as p
+inner join 
+customers as c
+on p.customernumber = c.customernumber
+group by customernumber;
+
+
+/* 3. Find out the number of customers from each country and their respective sales representative, their overall sales for each of the country */ 
+
+select count(c.customernumber), country, salesrepemployeenumber, (quantityordered*priceeach) as sales
+from customers as c
+inner join
+orders as o
+inner join
+orderdetails as od
+group by country;
+
+/* 4. Find out the amount of sales driven by each sales representative and for each product line */
+select salesrepemployeenumber, sum(quantityordered*priceeach) as sales, productline
+from customers as c
+inner join
+orders as o
+inner join
+orderdetails as od
+inner join
+products as p
+group by salesrepemployeenumber;
+
+
+/* 5. List the customer names for those who their names are starting with “A” and their overall purchase, profit made for each customer  */
+
+select c.customername, sum(od.quantityordered*od.priceeach) as overall_purchase, sum(p.msrp-p.buyprice) as profit
+from customers as c
+inner join 
+orders as o
+on c.customernumber = o.customernumber
+inner join
+orderdetails as od
+on o.ordernumber = od.ordernumber
+inner join 
+products as p
+on od.productcode = p.productcode
+where c.customername like 'a%'
+group by c.customername;
+
+/* 6. Find the profit for each product line and also see the inventory in stock */
+select productline, sum(p.msrp-p.buyprice) as profit, quantityinstock
+from products as p
+group by productline;
+
+/* 7. Check if the overall purchase value of each customers has exceeded the credit limit set for them and calculate the percent of deviation (both positive and negative)  */
+select c.customernumber, sum(od.quantityordered*od.priceeach) as purchasevalue, c.creditlimit, 
+((c.creditlimit-sum(od.quantityordered*od.priceeach))/c.creditlimit*100) as percetage_of_deviation
+from customers as c
+inner join
+orders as o
+on c.customernumber = o.customernumber
+inner join 
+orderdetails as od
+on o.ordernumber = od.ordernumber
+group by c.customernumber
+having percetage_of_deviation < 0
+order by percetage_of_deviation;
+
+
+/*   8. Find the top performing sales agent, revenue generated and total number of customers for each of them individually, create this as a view  */
+
